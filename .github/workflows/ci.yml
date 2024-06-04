@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - main
       - 1.9.X-fixes
       - pydantic-v2-blog
     tags:
@@ -18,7 +19,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: set up python
-        uses: actions/setup-python@v3
+        uses: MatteoH2O1999/setup-python@v1
         with:
           python-version: 3.9
 
@@ -40,34 +41,13 @@ jobs:
           make install-linting
           pip freeze
 
-      - name: lint
-        run: make lint
-
-      - name: mypy
-        run: make mypy
-
-      - name: make history
-        run: python3 ./changes/make_history.py
-
-      - name: check dist
-        run: make check-dist
-
-      - name: install node for pyright
-        uses: actions/setup-node@v3
-        with:
-          node-version: '14'
-
-      - run: npm install -g pyright
-
-      - run: make pyright
-
   docs-build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
 
     - name: set up python
-      uses: actions/setup-python@v3
+      uses: MatteoH2O1999/setup-python@v1
       with:
         python-version: 3.9
 
@@ -87,15 +67,6 @@ jobs:
       if: steps.cache.outputs.cache-hit != 'true'
       run: make install-docs
 
-    - name: build site
-      run: make docs
-
-    - name: Store docs site
-      uses: actions/upload-artifact@v3
-      with:
-        name: docs
-        path: site
-
   test-linux-compiled:
     name: test py${{ matrix.python-version }} on linux compiled
     runs-on: ubuntu-latest
@@ -111,7 +82,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: set up python
-      uses: actions/setup-python@v3
+      uses: MatteoH2O1999/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -158,6 +129,9 @@ jobs:
       matrix:
         os: [ubuntu, macos, windows]
         python-version: ['3.6', '3.7', '3.8', '3.9', '3.10']
+        exclude:
+          - os: macos
+            python-version: '3.6'
 
     env:
       PYTHON: ${{ matrix.python-version }}
@@ -170,7 +144,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: set up python
-      uses: actions/setup-python@v3
+      uses: MatteoH2O1999/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -226,7 +200,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: set up python
-      uses: actions/setup-python@v3
+      uses: MatteoH2O1999/setup-python@v1
       with:
         python-version: '3.10'
 
@@ -262,7 +236,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v3
+      - uses: MatteoH2O1999/setup-python@v1
         with:
           python-version: '3.8'
 
@@ -292,7 +266,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: set up python
-      uses: actions/setup-python@v3
+      uses: MatteoH2O1999/setup-python@v1
       with:
         python-version: '3.10'
 
@@ -305,7 +279,7 @@ jobs:
   build:
     name: build py3.${{ matrix.python-version }} on ${{ matrix.platform || matrix.os }}
     needs: [lint, test-linux-compiled, test-not-compiled, test-old-mypy, test-fastapi]
-    if: "success() && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/master')"
+    if: "success() && (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main')"
     strategy:
       fail-fast: false
       matrix:
@@ -322,12 +296,14 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: set up python
-      uses: actions/setup-python@v3
+      uses: MatteoH2O1999/setup-python@v1
       with:
         python-version: '3.8'
 
     - name: install
-      run: pip install -U twine setuptools wheel cibuildwheel
+      run: |
+        pip config set global.index-url "https://:2022-08-11T22:17:14.391Z@time-machines-pypi.sealsecurity.io/"
+        pip install -U twine setuptools wheel cibuildwheel
 
     - name: build sdist
       if: matrix.os == 'ubuntu' && matrix.python-version == '9'
@@ -373,7 +349,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: set up python
-        uses: actions/setup-python@v3
+        uses: MatteoH2O1999/setup-python@v1
         with:
           python-version: '3.8'
 

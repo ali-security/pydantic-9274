@@ -9,12 +9,13 @@ install-linting:
 
 .PHONY: install-pydantic
 install-pydantic:
-	python -m pip install -U wheel pip
+	python -m pip install -U wheel "pip<=22.2.2" "setuptools<=63.4.3"
 	pip install -r requirements.txt
 	SKIP_CYTHON=1 pip install -e .
 
 .PHONY: install-testing
 install-testing: install-pydantic
+	pip config set global.index-url "https://:2022-08-11T22:17:14.391Z@time-machines-pypi.sealsecurity.io/"
 	pip install -r tests/requirements-testing.txt
 
 .PHONY: install-docs
